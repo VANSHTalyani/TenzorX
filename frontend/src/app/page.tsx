@@ -48,15 +48,15 @@ const features = [
 export default function Home() {
   return (
     <div>
-      <section className="gradient-hero text-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 sm:px-6">
-          <Badge variant="neutral" className="mb-4 border-0 bg-white/15 text-white">
+      <section className="gradient-hero">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24 sm:px-6 lg:px-8">
+          <Badge variant="neutral" className="mb-4 border-0 bg-slate-900/5 dark:bg-white/15 text-slate-700 dark:text-white w-fit">
             Video-first origination
           </Badge>
-          <h1 className="max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-slate-900 dark:text-white">
             Onboard customers in one guided session
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-blue-100/95 leading-relaxed">
+          <p className="mt-6 max-w-2xl text-lg text-slate-600 dark:text-blue-100/95 leading-relaxed">
             Campaign link → video interview → consent & KYC signals → policy and
             risk → instant offers. Built for auditability and modular backends.
           </p>
@@ -69,41 +69,41 @@ export default function Home() {
               Start onboarding
               <ArrowRightIcon className="w-4 h-4" />
             </ButtonLink>
-            <ButtonLink href="/operator" variant="inverse" size="lg">
+            <ButtonLink href="/operator" variant="secondary" size="lg">
               Operator console
             </ButtonLink>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             Everything in the flow diagram, in one stack
           </h2>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-600 dark:text-slate-400">
             From campaign entry to central audit logging — wired with clear APIs
             and typed contracts.
           </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <Card key={f.title} hover padding="md" className="animate-fade-in">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <Card key={f.title} hover padding="md" className="animate-fade-in group dark:hover:border-slate-700">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/50 dark:text-brand-300">
                 <f.icon className="w-5 h-5" />
               </div>
-              <h3 className="font-semibold text-slate-900">{f.title}</h3>
-              <p className="mt-2 text-sm text-slate-600 leading-relaxed">{f.desc}</p>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100">{f.title}</h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{f.desc}</p>
             </Card>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-surface-200 bg-surface-50 py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">How the journey flows</h2>
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">How the journey flows</h2>
               <ol className="mt-6 space-y-4">
                 {[
                   "Customer opens a campaign link (SMS, WhatsApp, email).",
@@ -111,7 +111,7 @@ export default function Home() {
                   "STT + vision + LLM normalise inputs; policy and risk decide.",
                   "Offers render with EMI, rate, and tenure; audit trail is stored.",
                 ].map((t, i) => (
-                  <li key={i} className="flex gap-3 text-slate-700">
+                  <li key={i} className="flex gap-3 text-slate-700 dark:text-slate-300">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
                       {i + 1}
                     </span>
@@ -120,29 +120,31 @@ export default function Home() {
                 ))}
               </ol>
             </div>
-            <Card padding="lg" className="border-brand-100 shadow-glow">
-              <CardHeader
-                title="Ready to try a session?"
-                subtitle="Use the demo campaign or plug in your own API base URL."
-              />
-              <div className="flex flex-wrap gap-3">
-                <ButtonLink
-                  href="/onboard?campaign=DEMO-2026&channel=link"
-                  className="gap-2"
-                >
-                  Launch demo
-                  <ArrowRightIcon className="w-4 h-4" />
-                </ButtonLink>
-                <ButtonLink href="/operator" variant="secondary">
-                  Review a session ID
-                </ButtonLink>
-              </div>
-              <p className="mt-4 text-xs text-slate-500 flex items-start gap-2">
-                <TagIcon className="w-4 h-4 shrink-0 text-accent-500 mt-0.5" />
-                Offers are illustrative; integrate bureau and compliance vendors
-                before production launch.
-              </p>
-            </Card>
+            <div className="w-full lg:max-w-md lg:justify-self-end">
+              <Card padding="lg" className="border-brand-100 dark:border-brand-900/50 shadow-glow">
+                <CardHeader
+                  title="Ready to try a session?"
+                  subtitle="Use the demo campaign or plug in your own API base URL."
+                />
+                <div className="flex flex-wrap gap-3">
+                  <ButtonLink
+                    href="/onboard?campaign=DEMO-2026&channel=link"
+                    className="gap-2"
+                  >
+                    Launch demo
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </ButtonLink>
+                  <ButtonLink href="/operator" variant="secondary">
+                    Review a session ID
+                  </ButtonLink>
+                </div>
+                <p className="mt-4 text-xs text-slate-500 flex items-start gap-2">
+                  <TagIcon className="w-4 h-4 shrink-0 text-accent-500 mt-0.5" />
+                  Offers are illustrative; integrate bureau and compliance vendors
+                  before production launch.
+                </p>
+              </Card>
+            </div>
           </div>
         </div>
       </section>

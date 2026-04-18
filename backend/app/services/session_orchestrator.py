@@ -92,6 +92,7 @@ class SessionOrchestrator:
         # uploads never assign duplicate `seq` values.
         self._ingest_guard = asyncio.Lock()
         self._ingest_locks: Dict[UUID, asyncio.Lock] = {}
+        self._audio_buffers: Dict[UUID, bytearray] = {}
 
     async def _ingest_lock(self, session_id: UUID) -> asyncio.Lock:
         async with self._ingest_guard:
@@ -159,16 +160,43 @@ class SessionOrchestrator:
     ) -> List[TranscriptSegment]:
         lock = await self._ingest_lock(session_id)
         async with lock:
-            segments = await self._stt.transcribe(audio_bytes)
-            if not segments:
+            # 1) Cumulative buffering
+            buf = self._audio_buffers.get(session_id)
+            if buf is None:
+                buf = bytearray()
+                self._audio_buffers[session_id] = buf
+            buf.extend(audio_bytes)
+
+            # 2) Transcribe most recent context for speed (Sliding Window ~15s)
+            # 16kHz float32 is 64KB/s. But this is encoded WebM. 
+            # We take the last 256KB which is safely > 15s of encoded audio.
+            window = bytes(buf[-256000:])
+            all_segments = await self._stt.transcribe(window)
+            if not all_segments:
                 return []
-            await self._persist_transcript(session_id, segments)
+
+            # 3) Filter for NEW segments using database state
+            existing = await self._load_transcript(session_id)
+            last_end = max([s.end for s in existing]) if existing else -1.0
+
+            new_segments = []
+            for s in all_segments:
+                # We use a small epsilon (100ms) to avoid duplicates from slight timestamp jitter
+                if s.start > last_end - 0.1:
+                    # If the segment slightly overlaps but is mostly new, we take it.
+                    # This handles cases where Whisper refines a boundary.
+                    new_segments.append(s)
+
+            if not new_segments:
+                return []
+
+            await self._persist_transcript(session_id, new_segments)
             await self._audit.append(
                 session_id,
                 AuditEventType.TRANSCRIPT_APPENDED.value,
-                {"count": len(segments)},
+                {"count": len(new_segments), "cumulative_len": len(buf)},
             )
-            return segments
+            return new_segments
 
     async def ingest_face_frames(
         self, session_id: UUID, frames: Sequence[bytes]
@@ -366,15 +394,24 @@ class SessionOrchestrator:
 
     @staticmethod
     def _explain(profile, bureau, risk, policy_eval, offers) -> str:
+        # 1) Start with outcome-specific base message
         if policy_eval.failed_rules:
-            return "Policy failed: " + "; ".join(policy_eval.failed_rules)
-        if not offers:
-            return f"No eligible offers for risk band {risk.risk_band.value}."
-        return (
-            f"Customer placed in {risk.risk_band.value} risk band "
-            f"(risk={risk.risk_score:.2f}, propensity={risk.propensity_score:.2f}). "
-            f"Generated {len(offers)} offer(s)."
-        )
+            msg = "Application currently does not meet our minimum eligibility criteria."
+        elif not offers:
+            msg = "We are unable to provide a matching loan offer at this time."
+        else:
+            msg = "Congratulations! We have generated personalized loan offers for you."
+
+        # 2) Append Risk Drivers if any
+        if risk.drivers:
+            drivers_str = ", ".join(risk.drivers)
+            msg += f" Primary factors included: {drivers_str}."
+
+        # 3) Append LLM Notes (The "Full Analysis")
+        if profile.notes:
+            msg += f"\n\nAnalysis: {profile.notes}"
+
+        return msg
 
     @staticmethod
     async def _must_load(db, session_id: UUID) -> LoanSession:

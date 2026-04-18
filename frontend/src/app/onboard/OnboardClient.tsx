@@ -347,7 +347,7 @@ export default function OnboardClient() {
         }
       };
       try {
-        mr.start(2000);
+        mr.start(1000);
       } catch (recErr) {
         throw new Error(
           recErr instanceof Error ? recErr.message : "Audio capture failed."
@@ -561,79 +561,88 @@ export default function OnboardClient() {
       )}
 
       {stage === "live" && (
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 animate-fade-in">
-          {/* Main Stage: Video */}
-          <div className="lg:col-span-8 flex flex-col gap-8">
-            <div className="relative overflow-hidden rounded-[3rem] border-8 border-[var(--card)] bg-black shadow-card-hover ring-1 ring-[var(--border)]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 animate-fade-in items-stretch min-h-[600px]">
+          {/* Main Stage: Video with Overlays */}
+          <div className="lg:col-span-8 flex flex-col h-full">
+            <div className="relative flex-1 overflow-hidden rounded-[3rem] border-8 border-[var(--card)] bg-black shadow-card-hover ring-1 ring-[var(--border)] group">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="aspect-video w-full object-cover grayscale-[20%] brightness-[1.1]"
+                className="h-full w-full object-cover grayscale-[20%] brightness-[1.1] transition-all group-hover:grayscale-0"
               />
+              
+              {/* Top Status Overlays */}
               <div className="absolute left-8 top-8 flex gap-3">
                 <Badge variant="danger" dot className="px-4 py-2 font-black shadow-lg">LIVE CAPTURE</Badge>
                 {vision?.liveness?.is_live && <Badge variant="brand" dot className="px-4 py-2 font-black shadow-lg">TRUST INDEX HIGH</Badge>}
               </div>
+
               {vision?.age_estimation?.estimated_age != null && (
                 <div className="absolute right-8 top-8 rounded-2xl bg-black/60 px-5 py-2.5 text-[10px] font-black tracking-widest text-white backdrop-blur-xl border border-white/20">
                    AGE: {vision.age_estimation.estimated_age} · CONF: {(vision.age_estimation.confidence * 100).toFixed(0)}%
                 </div>
               )}
+
+              {/* Bottom Prompt Overlay */}
+              <div className="absolute inset-x-8 bottom-8 animate-slide-up">
+                <div className="rounded-[2.5rem] bg-black/60 p-8 backdrop-blur-2xl border border-white/10 shadow-2xl">
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    <div className="flex-1 text-center md:text-left">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand/80 mb-3">
+                        Inquiry Stage · {promptIdx + 1} / {PROMPTS.length}
+                      </p>
+                      <h2 className="text-xl md:text-2xl font-black text-white leading-snug tracking-tight">
+                        {PROMPTS[promptIdx]}
+                      </h2>
+                    </div>
+                    <div className="flex gap-3 shrink-0">
+                      <button 
+                        onClick={() => setPromptIdx((i) => Math.max(0, i - 1))}
+                        disabled={promptIdx === 0}
+                        className="p-4 rounded-2xl bg-white/10 text-white hover:bg-white/20 disabled:opacity-10 transition-all border border-white/10 shadow-lg"
+                      >
+                        <ChevronLeftIcon className="h-6 w-6" />
+                      </button>
+                      <button 
+                        onClick={() => setPromptIdx((i) => Math.min(PROMPTS.length - 1, i + 1))}
+                        disabled={promptIdx >= PROMPTS.length - 1}
+                        className="p-4 rounded-2xl bg-white/10 text-white hover:bg-white/20 disabled:opacity-10 transition-all border border-white/10 shadow-lg"
+                      >
+                        <ChevronRightIcon className="h-6 w-6" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Side Stage: Intelligence & Prompts */}
+          {/* Sidebar: Intelligence & Actions */}
           <div className="lg:col-span-4 flex flex-col gap-8 h-full">
-            {/* Prompt Card */}
-            <Card padding="md" className="border-t-8 border-t-brand shadow-soft bg-[var(--card)]">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand mb-4">
-                Inquiry Stage · {promptIdx + 1} / {PROMPTS.length}
-              </p>
-              <h2 className="text-xl font-black text-[var(--foreground)] leading-snug tracking-tight">
-                {PROMPTS[promptIdx]}
-              </h2>
-              <div className="mt-8 flex items-center justify-between">
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setPromptIdx((i) => Math.max(0, i - 1))}
-                    disabled={promptIdx === 0}
-                    className="p-3 rounded-xl border border-[var(--border)] hover:bg-brand/5 disabled:opacity-20 transition-all shadow-sm"
-                  >
-                    <ChevronLeftIcon className="h-5 w-5" />
-                  </button>
-                  <button 
-                    onClick={() => setPromptIdx((i) => Math.min(PROMPTS.length - 1, i + 1))}
-                    disabled={promptIdx >= PROMPTS.length - 1}
-                    className="p-3 rounded-xl border border-[var(--border)] hover:bg-brand/5 disabled:opacity-20 transition-all shadow-sm"
-                  >
-                    <ChevronRightIcon className="h-5 w-5" />
-                  </button>
-                </div>
-                {promptIdx === PROMPTS.length - 1 && (
-                  <Button variant="accent" size="sm" onClick={submitDecision} className="px-6 font-black uppercase tracking-widest text-[9px] h-11">Finish Processing</Button>
-                )}
-              </div>
-            </Card>
-
-            {/* Transcript Card */}
-            <div className="h-[480px] flex flex-col rounded-[2.5rem] border-2 border-[var(--border)] bg-[var(--card)] shadow-soft overflow-hidden">
+            {/* Expanded Transcript Card */}
+            <div className="flex-1 flex flex-col rounded-[3rem] border-2 border-[var(--border)] bg-[var(--card)] shadow-soft overflow-hidden h-full">
               <div className="border-b border-[var(--border)] px-8 py-5 flex items-center justify-between bg-brand/5 shrink-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Intelligent Transcription</p>
-                <div className="h-2 w-2 rounded-full bg-brand animate-pulse shadow-glow" />
+                <div className="flex items-center gap-3">
+                   <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Live Transcript</p>
+                </div>
+                <div className="animate-pulse flex gap-1">
+                   {[1,2,3].map(i => <div key={i} className={`h-1.5 w-1 rounded-full bg-brand/30`} />)}
+                </div>
               </div>
-              <div ref={transcriptRef} className="flex-1 overflow-y-auto p-8 space-y-5 scroll-smooth">
+              <div ref={transcriptRef} className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth">
                 {transcript.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-30">
                     <MicIcon className="h-10 w-10 text-slate-400 mb-4 animate-pulse" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Listening to input...</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Calibrating Audio...</p>
                   </div>
                 )}
                 {transcript.map((t, i) => (
                   <div key={`${t.start}-${i}`} className="animate-slide-up group">
-                    <div className="flex items-center gap-2 mb-2 opacity-30 group-hover:opacity-100 transition-opacity">
-                      <span className="text-[9px] font-black tracking-widest py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                    <div className="flex items-center gap-2 mb-2 opacity-20 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[8px] font-black tracking-widest px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
                         {t.start.toFixed(1)}S
                       </span>
                     </div>
@@ -643,8 +652,21 @@ export default function OnboardClient() {
                   </div>
                 ))}
               </div>
+              
+              {/* Sidebar Footer Actions */}
+              <div className="p-6 border-t border-[var(--border)] bg-slate-50/50 dark:bg-slate-900/50">
+                {promptIdx === PROMPTS.length - 1 ? (
+                  <Button variant="accent" size="lg" onClick={submitDecision} className="w-full text-xs font-black uppercase tracking-widest h-14 shadow-lg animate-pulse hover:animate-none">
+                    Finish Interview
+                  </Button>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                     <p className="text-[9px] font-bold text-slate-400 uppercase text-center tracking-widest">Ongoing Analysis...</p>
+                     <Button variant="ghost" size="sm" onClick={resetFlow} className="text-danger-600 font-bold uppercase tracking-widest text-[9px] hover:bg-danger-500/10">Abandon Session</Button>
+                  </div>
+                )}
+              </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={resetFlow} className="text-danger-600 font-bold uppercase tracking-widest text-[9px] hover:bg-danger-500/10">Abandon session</Button>
           </div>
         </div>
       )}

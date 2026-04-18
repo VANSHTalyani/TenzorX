@@ -314,7 +314,11 @@ _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
 def _whisper_segments_to_transcript_rows(segments: List[Any]) -> List[TranscriptSegment]:
-    """Turn Whisper segments into stored rows; split long runs on sentence boundaries."""
+    """Turn Whisper segments into stored rows.
+    
+    We avoid aggressive sentence splitting here to allow 'multi-line' natural
+    sentences to stay as a single block in the UI, unless they are exceptionally long.
+    """
     out: List[TranscriptSegment] = []
     for seg in segments:
         text = (getattr(seg, "text", None) or "").strip()
@@ -323,10 +327,10 @@ def _whisper_segments_to_transcript_rows(segments: List[Any]) -> List[Transcript
         t0 = float(getattr(seg, "start", 0.0))
         t1 = float(getattr(seg, "end", t0))
         conf = float(getattr(seg, "avg_logprob", 0.0))
-        dur = max(t1 - t0, 1e-3)
 
-        parts = [p.strip() for p in _SENTENCE_SPLIT.split(text) if p.strip()]
-        if len(parts) <= 1:
+        # Only split if the text is very long (e.g. > 200 chars) to prevent UI overflow,
+        # otherwise keep sentences together as requested.
+        if len(text) < 200:
             out.append(
                 TranscriptSegment(
                     start=t0,
@@ -338,6 +342,9 @@ def _whisper_segments_to_transcript_rows(segments: List[Any]) -> List[Transcript
             )
             continue
 
+        # For very long segments, still split to keep UI 'pulse' steady.
+        dur = max(t1 - t0, 1e-3)
+        parts = [p.strip() for p in _SENTENCE_SPLIT.split(text) if p.strip()]
         weights = [max(len(p), 1) for p in parts]
         wsum = float(sum(weights))
         cur = t0

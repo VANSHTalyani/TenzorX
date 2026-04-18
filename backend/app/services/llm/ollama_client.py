@@ -163,7 +163,7 @@ class OllamaLLMClient(ILLMClient):
         except UpstreamServiceError:
             raise
         except httpx.HTTPError as exc:
-            log.error("llm.ollama.http_error", error=str(exc))
+            log.error("llm.ollama.http_error", error=str(exc), type=type(exc).__name__)
             raise UpstreamServiceError(f"Ollama request failed: {exc}") from exc
 
     async def extract_profile(

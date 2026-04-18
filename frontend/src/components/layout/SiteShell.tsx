@@ -43,8 +43,8 @@ export default function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)] transition-colors duration-300">
-      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--card)] h-16 sm:h-20">
-        <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-md h-16 sm:h-20">
+        <div className="mx-auto flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-brand-foreground font-bold shadow-soft transition-transform group-hover:scale-105">
               TX
@@ -70,7 +70,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
                       "rounded-xl px-4 py-2.5 text-sm font-bold transition-all",
                       active
                         ? "bg-brand text-brand-foreground shadow-sm shadow-brand/20"
-                        : "text-slate-500 hover:text-[var(--foreground)] hover:bg-brand/5",
+                        : "text-slate-500 hover:text-[var(--foreground)] hover:bg-brand/5 dark:hover:bg-brand-900/40",
                     ].join(" ")}
                   >
                     {item.label}
@@ -83,7 +83,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
             
             <button
               onClick={toggleTheme}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] text-slate-500 hover:text-[var(--foreground)] hover:bg-brand/5 transition-all shadow-sm"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] text-slate-500 hover:text-[var(--foreground)] hover:bg-brand/5 dark:hover:bg-brand-900/40 transition-all shadow-sm"
               aria-label="Toggle theme"
             >
               {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
@@ -95,7 +95,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
       <main className="flex-1 overflow-x-hidden">{children}</main>
 
       <footer className="border-t border-[var(--border)] bg-[var(--card)] py-12 text-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
-        <div className="mx-auto max-w-4xl px-8">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
           <p className="leading-relaxed opacity-80">
             TenzorX Analytics Infrastructure · Enterprise Risk Management
           </p>
