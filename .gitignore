@@ -1,0 +1,80 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+node_modules/
+backend/venv/
+backend/.venv/
+venv/
+.venv/
+env/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js
+.next/
+out/
+
+# Production build
+build/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+logs/
+
+# Testing
+.npm/
+.jest/
+.mocha/
+.nyc_output/
+.parcel-cache/
+coverage/
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/__pycache__/
+backend/*/__pycache__/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.docker/
+# Root docker-compose override if used
+docker-compose.override.yml
+
+# Backend Data/Models (Large files)
+backend/data/**/*.pt
+backend/data/**/*.pth
+backend/data/**/*.h5
+backend/data/**/*.joblib
+backend/data/**/*.pkl
+backend/data/synthetic/*.csv
+backend/data/synthetic/*.json

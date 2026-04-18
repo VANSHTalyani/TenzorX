@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --color-brand: #0F4C81;
+    --color-accent: #f59e0b;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface-50 text-slate-800;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-surface-300; }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20;
+  }
+
+  .gradient-brand {
+    @apply bg-gradient-to-br from-brand-500 to-brand-700;
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, #0F4C81 0%, #1a6baf 50%, #0a3559 100%);
+  }
+
+  .input-base {
+    @apply w-full rounded-lg border border-surface-200 bg-white px-4 py-2.5
+           text-sm text-slate-800 placeholder:text-slate-400
+           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400
+           transition-shadow duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5
+           text-xs font-medium;
+  }
+
+  .tab-btn {
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors
+           hover:bg-surface-100 text-slate-500;
+  }
+  .tab-btn-active {
+    @apply bg-brand-50 text-brand-600 shadow-sm;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
