@@ -1,48 +1,40 @@
 "use client";
 
-type BadgeVariant =
-  | "brand"
-  | "success"
-  | "danger"
-  | "warning"
-  | "neutral"
-  | "info";
+import type { ReactNode } from "react";
 
-interface BadgeProps {
-  variant?: BadgeVariant;
-  children: React.ReactNode;
-  dot?: boolean;
-  className?: string;
-}
+type Variant = "success" | "danger" | "warning" | "brand" | "neutral";
 
-const variants: Record<BadgeVariant, string> = {
-  brand: "bg-brand-50 text-brand-700",
-  success: "bg-success-50 text-success-700",
-  danger: "bg-danger-50 text-danger-700",
-  warning: "bg-accent-50 text-accent-700",
-  neutral: "bg-surface-100 text-slate-600",
-  info: "bg-blue-50 text-blue-700",
-};
-
-const dotColors: Record<BadgeVariant, string> = {
-  brand: "bg-brand-500",
-  success: "bg-success-500",
-  danger: "bg-danger-500",
-  warning: "bg-accent-500",
-  neutral: "bg-slate-400",
-  info: "bg-blue-500",
+const variants: Record<Variant, string> = {
+  success: "bg-success-50 text-success-700 border-success-500/20",
+  danger: "bg-danger-50 text-danger-700 border-danger-500/20",
+  warning: "bg-accent/10 text-accent-700 border-accent/20",
+  brand: "bg-brand/10 text-brand border-brand/20",
+  neutral: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
 };
 
 export default function Badge({
-  variant = "neutral",
   children,
+  variant = "neutral",
   dot = false,
   className = "",
-}: BadgeProps) {
+}: {
+  children: ReactNode;
+  variant?: Variant;
+  dot?: boolean;
+  className?: string;
+}) {
   return (
-    <span className={`badge ${variants[variant]} ${className}`}>
+    <span
+      className={[
+        "badge border shadow-sm",
+        variants[variant],
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />
+        <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
       )}
       {children}
     </span>

@@ -25,8 +25,8 @@ export default function Card({
   return (
     <div
       className={[
-        "bg-white rounded-2xl border border-surface-200 shadow-card",
-        hover && "transition-shadow duration-200 hover:shadow-card-hover",
+        "bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-sm transition-all duration-300",
+        hover && "hover:shadow-md hover:border-brand/20 hover:-translate-y-0.5",
         paddings[padding],
         className,
       ]
@@ -48,11 +48,11 @@ export function CardHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-4">
+    <div className="flex items-start justify-between mb-5">
       <div>
-        <h3 className="font-semibold text-slate-800">{title}</h3>
+        <h3 className="font-bold text-[var(--foreground)] tracking-tight text-lg">{title}</h3>
         {subtitle && (
-          <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
+          <p className="text-sm text-slate-500 mt-1 leading-relaxed">{subtitle}</p>
         )}
       </div>
       {action}

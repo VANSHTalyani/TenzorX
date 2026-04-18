@@ -66,8 +66,7 @@ export default function OperatorPage() {
           Operator console
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Inspect session state, underwriting outputs, and the append-only audit
-          trail.
+          Paste a <b>Session UUID</b> from the onboarding flow to inspect its intelligence outputs and audit trail.
         </p>
       </div>
 
@@ -90,9 +89,9 @@ export default function OperatorPage() {
       {error && (
         <Card
           padding="md"
-          className="mb-6 border-danger-200 bg-danger-50/60 text-danger-800"
+          className="mb-8 border-danger-500/20 bg-danger-500/5 text-danger-600 font-bold uppercase tracking-widest text-xs"
         >
-          {error}
+          {typeof error === 'string' ? error : (error as any).message || JSON.stringify(error)}
         </Card>
       )}
 

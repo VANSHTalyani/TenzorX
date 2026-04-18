@@ -1,77 +1,69 @@
 "use client";
 
+import { CheckIcon } from "./IconSet";
+
 interface Step {
   label: string;
   description?: string;
 }
 
-interface StepIndicatorProps {
-  steps: Step[];
-  current: number;
-  className?: string;
-}
-
 export default function StepIndicator({
   steps,
   current,
-  className = "",
-}: StepIndicatorProps) {
+}: {
+  steps: Step[];
+  current: number;
+}) {
   return (
-    <nav className={`flex items-center ${className}`}>
-      {steps.map((step, i) => {
-        const state: "done" | "active" | "upcoming" =
-          i < current ? "done" : i === current ? "active" : "upcoming";
+    <div className="flex w-full items-center">
+      {steps.map((step, idx) => {
+        const isCompleted = idx < current;
+        const isActive = idx === current;
 
         return (
-          <div key={i} className="flex items-center">
-            <div className="flex flex-col items-center gap-1">
+          <div key={idx} className="flex flex-1 items-center last:flex-none">
+            <div className="flex flex-col items-center gap-2">
               <div
                 className={[
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors duration-200",
-                  state === "done" && "bg-success-500 text-white",
-                  state === "active" &&
-                    "bg-brand text-white ring-4 ring-brand-100",
-                  state === "upcoming" && "bg-surface-200 text-slate-400",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
+                  "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500",
+                  isCompleted
+                    ? "bg-brand border-brand text-brand-foreground shadow-soft"
+                    : isActive
+                      ? "bg-[var(--card)] border-brand text-brand shadow-md"
+                      : "bg-[var(--card)] border-surface-200 text-slate-400",
+                ].join(" ")}
               >
-                {state === "done" ? (
-                  <CheckIcon />
+                {isCompleted ? (
+                  <CheckIcon className="h-6 w-6 stroke-[3]" />
                 ) : (
-                  i + 1
+                  <span className="text-sm font-bold">{idx + 1}</span>
                 )}
               </div>
-              <span
-                className={[
-                  "text-[11px] font-medium whitespace-nowrap max-w-[72px] text-center leading-tight",
-                  state === "active" ? "text-brand-600" : "text-slate-400",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                {step.label}
-              </span>
+              <div className="hidden sm:block text-center">
+                <p
+                  className={[
+                    "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isActive ? "text-brand" : "text-slate-500",
+                  ].join(" ")}
+                >
+                  {step.label}
+                </p>
+              </div>
             </div>
-            {i < steps.length - 1 && (
-              <div
-                className={[
-                  "w-10 md:w-16 h-0.5 mx-1 mt-[-16px] transition-colors duration-300",
-                  i < current ? "bg-success-500" : "bg-surface-200",
-                ].join(" ")}
-              />
+
+            {idx < steps.length - 1 && (
+              <div className="mx-4 h-0.5 flex-1 bg-[var(--border)] relative overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-brand transition-all duration-700 ease-in-out"
+                  style={{
+                    width: isCompleted ? "100%" : "0%",
+                  }}
+                />
+              </div>
             )}
           </div>
         );
       })}
-    </nav>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
+    </div>
   );
 }

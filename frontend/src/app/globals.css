@@ -5,8 +5,26 @@
 @layer base {
   :root {
     color-scheme: light;
-    --color-brand: #0F4C81;
-    --color-accent: #f59e0b;
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --brand: #0f172a;
+    --brand-foreground: #ffffff;
+    --accent: #f59e0b;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: #020617;
+    --foreground: #f8fafc;
+    --border: rgba(255, 255, 255, 0.1);
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --brand: #f8fafc;
+    --brand-foreground: #0f172a;
+    --accent: #fbbf24;
   }
 
   html {
@@ -16,7 +34,8 @@
   }
 
   body {
-    @apply bg-surface-50 text-slate-800;
+    @apply bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   ::selection {
@@ -26,44 +45,37 @@
   /* scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-surface-300 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-surface-300; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
 }
 
 @layer components {
-  .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/20;
-  }
-
-  .gradient-brand {
-    @apply bg-gradient-to-br from-brand-500 to-brand-700;
-  }
-
-  .gradient-hero {
-    background: linear-gradient(135deg, #0F4C81 0%, #1a6baf 50%, #0a3559 100%);
+  .polished-card {
+    @apply bg-[var(--card)] border border-[var(--border)] shadow-sm rounded-2xl;
   }
 
   .input-base {
-    @apply w-full rounded-lg border border-surface-200 bg-white px-4 py-2.5
-           text-sm text-slate-800 placeholder:text-slate-400
-           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400
-           transition-shadow duration-150;
+    @apply w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5
+           text-sm text-[var(--foreground)] placeholder:text-slate-400
+           focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40
+           transition-all duration-200;
   }
 
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5
-           text-xs font-medium;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5
+           text-[10px] font-bold uppercase tracking-wider;
   }
 
   .tab-btn {
     @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors
-           hover:bg-surface-100 text-slate-500;
+           hover:bg-brand/5 text-slate-500;
   }
   .tab-btn-active {
-    @apply bg-brand-50 text-brand-600 shadow-sm;
+    @apply bg-brand/10 text-brand shadow-sm;
   }
 }
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
+  .text-shadow-sm { text-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 }
