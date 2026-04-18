@@ -94,17 +94,53 @@ export default function SiteShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-x-hidden">{children}</main>
 
-      <footer className="border-t border-[var(--border)] bg-[var(--card)] py-12 text-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
+      <footer className="border-t border-[var(--border)] bg-[var(--card)]/50 pt-16 pb-8">
         <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <p className="leading-relaxed opacity-80">
-            TenzorX Analytics Infrastructure · Enterprise Risk Management
-          </p>
-          <div className="mt-6 flex justify-center gap-10">
-            <span className="hover:text-brand transition-colors cursor-pointer">Security Suite</span>
-            <span className="hover:text-brand transition-colors cursor-pointer">Compliance</span>
-            <span className="hover:text-brand transition-colors cursor-pointer">API Docs</span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+            <div className="md:col-span-2">
+              <Link href="/" className="flex items-center gap-3 group mb-4 inline-flex">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-brand-foreground font-bold text-xs shadow-soft transition-transform group-hover:scale-105">
+                  TX
+                </span>
+                <span className="font-black text-lg tracking-tighter text-[var(--foreground)]">
+                  TenzorX
+                </span>
+              </Link>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed mb-6">
+                Next-generation video origination platform. Built for auditability, enterprise risk management, and modular backends.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-[var(--foreground)] mb-4 text-sm tracking-wide">Platform</h4>
+              <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+                <li><Link href="/onboard?campaign=DEMO-2026&channel=link" className="hover:text-[var(--foreground)] transition-colors">Start Onboarding</Link></li>
+                <li><Link href="/operator" className="hover:text-[var(--foreground)] transition-colors">Operator Console</Link></li>
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">Analytics Engine</a></li>
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">Risk & Policy</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-[var(--foreground)] mb-4 text-sm tracking-wide">Developers & Trust</h4>
+              <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">API Documentation</a></li>
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">Compliance Hub</a></li>
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">Security Suite</a></li>
+                <li><a href="#" className="hover:text-[var(--foreground)] transition-colors">System Status</a></li>
+              </ul>
+            </div>
           </div>
-          <p className="mt-10 font-bold text-brand opacity-60 italic">Built for the future of fintech.</p>
+          
+          <div className="border-t border-[var(--border)] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+              © 2026 TenzorX Technologies. Built for the future of fintech.
+            </p>
+            <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <a href="#" className="hover:text-[var(--foreground)] transition-colors">Privacy</a>
+              <a href="#" className="hover:text-[var(--foreground)] transition-colors">Terms</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
