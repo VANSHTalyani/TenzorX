@@ -219,6 +219,12 @@ export default function OnboardClient() {
     loan_terms: false,
   });
 
+  useEffect(() => {
+    if (vision) {
+      console.log("[Vision Update]", vision);
+    }
+  }, [vision]);
+
   const transcriptRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll transcript to bottom
@@ -341,8 +347,8 @@ export default function OnboardClient() {
       mr.ondataavailable = async (e) => {
         if (e.data.size > 0 && sid) {
           try {
-            const segs = await api.uploadAudio(sid, e.data, uploadName);
-            if (segs.length) setTranscript((p) => [...p, ...segs]);
+            const fullTranscript = await api.uploadAudio(sid, e.data, uploadName);
+            if (fullTranscript.length) setTranscript(fullTranscript);
           } catch { /* ignore */ }
         }
       };

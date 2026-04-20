@@ -35,7 +35,7 @@ class ISpeechToText(ABC):
         *,
         sample_rate: int = 16000,
         language: Optional[str] = None,
-    ) -> List[TranscriptSegment]: ...
+    ) -> tuple[List[TranscriptSegment], float]: ...
 
 
 class IAgeEstimator(ABC):

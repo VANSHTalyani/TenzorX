@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Sequence
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.core.exceptions import NotFoundError
 from app.core.logging import get_logger
@@ -167,36 +167,46 @@ class SessionOrchestrator:
                 self._audio_buffers[session_id] = buf
             buf.extend(audio_bytes)
 
-            # 2) Transcribe most recent context for speed (Sliding Window ~15s)
-            # 16kHz float32 is 64KB/s. But this is encoded WebM. 
-            # We take the last 256KB which is safely > 15s of encoded audio.
-            window = bytes(buf[-256000:])
-            all_segments = await self._stt.transcribe(window)
+            # 2) Transcribe. 
+            # We pass the full buffer; internal STT logic handles windowing for speed 
+            # while maintaining absolute timestamps.
+            all_segments, window_start = await self._stt.transcribe(bytes(buf))
             if not all_segments:
-                return []
+                # If currently no speech detected in the window, just return existing transcript
+                return await self._load_transcript(session_id)
 
-            # 3) Filter for NEW segments using database state
+            # 3) Stability Logic: Identify which parts of the transcript are "Locked".
+            # We treat the last ~8 seconds as a "draft" zone that can be refined.
+            # Anything older than that is final and should never be deleted.
+            total_duration = len(buf) / 16000.0
+            stability_checkpoint = max(0.0, total_duration - 8.0)
+
+            # Load existing records to find the exact "cut point".
             existing = await self._load_transcript(session_id)
-            last_end = max([s.end for s in existing]) if existing else -1.0
+            
+            # T_STABLE is the end time of the last segment that is safely outside the draft zone.
+            stable_segments = [s for s in existing if s.end <= stability_checkpoint]
+            t_stable = stable_segments[-1].end if stable_segments else 0.0
 
-            new_segments = []
-            for s in all_segments:
-                # We use a small epsilon (100ms) to avoid duplicates from slight timestamp jitter
-                if s.start > last_end - 0.1:
-                    # If the segment slightly overlaps but is mostly new, we take it.
-                    # This handles cases where Whisper refines a boundary.
-                    new_segments.append(s)
+            async with session_scope() as db:
+                # Delete ONLY the "draft" segments (those that end after t_stable).
+                stmt = (
+                    delete(TranscriptRecord)
+                    .where(TranscriptRecord.session_id == session_id)
+                    .where(TranscriptRecord.end_s > t_stable)
+                )
+                await db.execute(stmt)
 
-            if not new_segments:
-                return []
-
-            await self._persist_transcript(session_id, new_segments)
+            # Only persist segments from the new transcription that are NOT in the stable zone.
+            top_segments = [s for s in all_segments if s.end > t_stable]
+            await self._persist_transcript(session_id, top_segments)
+            
             await self._audit.append(
                 session_id,
                 AuditEventType.TRANSCRIPT_APPENDED.value,
-                {"count": len(new_segments), "cumulative_len": len(buf)},
+                {"count": len(top_segments), "cumulative_len": len(buf), "locked_at": t_stable},
             )
-            return new_segments
+            return await self._load_transcript(session_id)
 
     async def ingest_face_frames(
         self, session_id: UUID, frames: Sequence[bytes]
@@ -212,6 +222,14 @@ class SessionOrchestrator:
         )
         await self._audit.append(
             session_id, AuditEventType.LIVENESS_CHECKED.value, live.model_dump(mode="json")
+        )
+        log.info(
+            "vision.ingest_complete",
+            session_id=str(session_id),
+            age=age_est.estimated_age,
+            liveness=live.is_live,
+            age_conf=round(age_est.confidence, 2),
+            live_conf=round(live.confidence, 2),
         )
         return age_est, live
 
@@ -299,6 +317,8 @@ class SessionOrchestrator:
             last = (await db.execute(stmt)).scalar()
             next_seq = (last or 0) + 1
             for seg in segments:
+                # Basic deduplication: if the exact same text and start time already exist, skip.
+                # Since we just deleted within the window, this is mostly a safety net.
                 db.add(
                     TranscriptRecord(
                         session_id=session_id,

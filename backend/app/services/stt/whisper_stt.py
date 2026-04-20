@@ -217,19 +217,22 @@ class FasterWhisperSTT(ISpeechToText):
         *,
         sample_rate: int = 16000,
         language: Optional[str] = None,
-    ) -> List[TranscriptSegment]:
+    ) -> tuple[List[TranscriptSegment], float]:
         if not audio_bytes or len(audio_bytes) < _MIN_INPUT_BYTES:
-            return []
+            return [], 0.0
 
         model = await self._ensure_model()
         audio = await asyncio.to_thread(self._decode_audio, audio_bytes, sample_rate)
+
+        offset_s = 0.0
+
         if audio.size < _MIN_PCM_SAMPLES:
             log.debug(
                 "stt.skip_short_pcm",
                 samples=int(audio.size),
                 input_bytes=len(audio_bytes),
             )
-            return []
+            return [], offset_s
 
         async with self._infer_sem:
             raw_segments: Sequence[Any] = await asyncio.to_thread(
@@ -239,7 +242,7 @@ class FasterWhisperSTT(ISpeechToText):
                 language or self._language,
             )
 
-        return _whisper_segments_to_transcript_rows(list(raw_segments))
+        return _whisper_segments_to_transcript_rows(list(raw_segments), offset_s=offset_s), offset_s
 
     @staticmethod
     def _decode_audio(audio_bytes: bytes, target_sr: int) -> np.ndarray:
@@ -296,11 +299,12 @@ def _transcribe_sync_collect(
         language=language,
         vad_filter=True,
         vad_parameters={
-            # Silero default ~2000 ms merges short pauses between sentences.
-            "min_silence_duration_ms": 400,
-            "speech_pad_ms": 120,
+            # Relaxed settings: don't cut unless there is a 2s gap, and pad more aggressively.
+            "min_silence_duration_ms": 2000,
+            "speech_pad_ms": 400,
         },
         beam_size=1,
+        condition_on_previous_text=False,
     )
     try:
         segments, _info = model.transcribe(audio, **kwargs)
@@ -313,7 +317,9 @@ def _transcribe_sync_collect(
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
-def _whisper_segments_to_transcript_rows(segments: List[Any]) -> List[TranscriptSegment]:
+def _whisper_segments_to_transcript_rows(
+    segments: List[Any], offset_s: float = 0.0
+) -> List[TranscriptSegment]:
     """Turn Whisper segments into stored rows.
     
     We avoid aggressive sentence splitting here to allow 'multi-line' natural
@@ -324,8 +330,8 @@ def _whisper_segments_to_transcript_rows(segments: List[Any]) -> List[Transcript
         text = (getattr(seg, "text", None) or "").strip()
         if not text:
             continue
-        t0 = float(getattr(seg, "start", 0.0))
-        t1 = float(getattr(seg, "end", t0))
+        t0 = float(getattr(seg, "start", 0.0)) + offset_s
+        t1 = float(getattr(seg, "end", t0)) + offset_s
         conf = float(getattr(seg, "avg_logprob", 0.0))
 
         # Only split if the text is very long (e.g. > 200 chars) to prevent UI overflow,
